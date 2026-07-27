@@ -1,0 +1,69 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "superpowers@git+https://github.com/VitaleZY/superpowers.git"
+  ],
+  "agent": {
+    "sp-sub-implementer": {
+      "description": "Implements a single task from a Superpowers plan using TDD. Reads task brief, writes failing test, implements minimal code, runs tests, commits.",
+      "mode": "subagent",
+      "model": "your-model"
+    },
+    "sp-sub-task-reviewer": {
+      "description": "Reviews one task implementation for spec compliance and code quality. Read-only.",
+      "mode": "subagent",
+      "model": "your-model",
+      "prompt": "You are reviewing one task implementation: first whether it matches its requirements, then whether it is well-built. Verify claims against the diff. Do not re-run tests the implementer already ran. Report two independent verdicts: Spec Compliance and Code Quality.",
+      "tools": {
+        "write": false,
+        "edit": false
+      }
+    },
+    "sp-sub-re-reviewer": {
+      "description": "Re-reviews a fix round: verifies each finding from the previous review was addressed and checks the fix diff for new breakage.",
+      "mode": "subagent",
+      "model": "your-model",
+      "prompt": "You are re-reviewing one task fix round. A previous review produced findings; an implementer has attempted to fix them. Your job is to verdict each finding (ADDRESSED / NOT ADDRESSED with file:line evidence) and inspect the fix diff for new breakage. Do NOT re-review code the fix did not touch.",
+      "tools": {
+        "write": false,
+        "edit": false
+      }
+    },
+    "sp-sub-final-reviewer": {
+      "description": "Whole-branch code review after all tasks are complete. Evaluates plan alignment, code quality, architecture, testing, production readiness.",
+      "mode": "subagent",
+      "model": "your-model",
+      "prompt": "You are a Senior Code Reviewer conducting a whole-branch review. Evaluate the entire change across six dimensions: Plan alignment, Code quality, Architecture, Testing, Production readiness, Cross-task consistency. Provide a verdict: Ready to merge? Yes / No / With fixes.",
+      "tools": {
+        "write": false,
+        "edit": false
+      }
+    },
+    "sp-sub-fixer": {
+      "description": "Fixes Critical and Important findings from a task review. Makes precise edits to address specific findings without introducing new issues.",
+      "mode": "subagent",
+      "model": "your-model",
+      "prompt": "You are fixing specific issues found by a code reviewer. Make only the changes needed to address each finding. After fixing, re-run the tests covering your changes and report results. Do not make unrelated changes or improvements."
+    },
+    "sp-sub-spec-reviewer": {
+      "description": "Reviews a spec document for completeness, consistency, clarity, scope, and YAGNI compliance. Read-only.",
+      "mode": "subagent",
+      "model": "your-model",
+      "prompt": "You are a spec document reviewer. Verify the spec is complete and ready for implementation planning. Check: Completeness (no TODOs/TBDs), Consistency (no internal contradictions), Clarity (no ambiguity that could cause wrong implementation), Scope (focused on single subsystem), YAGNI (no unrequested features). Only flag issues that would cause real problems during implementation planning.",
+      "tools": {
+        "write": false,
+        "edit": false
+      }
+    },
+    "sp-sub-plan-reviewer": {
+      "description": "Reviews an implementation plan for completeness, spec alignment, task decomposition, and buildability. Read-only.",
+      "mode": "subagent",
+      "model": "your-model",
+      "prompt": "You are a plan document reviewer. Verify the plan is complete and ready for implementation. Check: Completeness (no placeholders, all steps actionable), Spec Alignment (covers all spec requirements), Task Decomposition (clear boundaries between tasks), Buildability (an engineer could follow without getting stuck). Only flag issues that would cause real problems during implementation.",
+      "tools": {
+        "write": false,
+        "edit": false
+      }
+    }
+  }
+}

@@ -76,13 +76,24 @@ export const SuperpowersPlugin = async ({ client, directory }) => {
     const toolMapping = `**Tool Mapping for OpenCode:**
 When skills request actions, substitute OpenCode equivalents:
 - Create or update todos → \`todowrite\`
-- \`Subagent (general-purpose):\` → \`task\` with \`subagent_type: "general"\`
 - Invoke a skill → OpenCode's native \`skill\` tool
 - Read files → \`read\`
 - Create, edit, or delete files → \`apply_patch\`
 - Run shell commands → \`bash\`
 - Search files → \`grep\`, \`glob\`
 - Fetch a URL → \`webfetch\`
+
+**Subagent dispatch mapping:**
+Skills declare subagents as \`Subagent (general-purpose):\` with a description field. Route based on the description or prompt content:
+- Description contains "Implement" or "implement Task" → \`task\` with \`subagent_type: "sp-sub-implementer"\`
+- Description contains "Review Task N" or prompt contains "reviewing one task" → \`task\` with \`subagent_type: "sp-sub-task-reviewer"\`
+- Description contains "Re-review" or prompt contains "re-reviewing" → \`task\` with \`subagent_type: "sp-sub-re-reviewer"\`
+- Description contains "Review code changes" or prompt contains "whole-branch review" → \`task\` with \`subagent_type: "sp-sub-final-reviewer"\`
+- Description contains "fix" (case-insensitive) or prompt contains "fix specific issues" → \`task\` with \`subagent_type: "sp-sub-fixer"\`
+- Description contains "Review spec" or prompt contains "spec document reviewer" → \`task\` with \`subagent_type: "sp-sub-spec-reviewer"\`
+- Description contains "Review plan" or prompt contains "plan document reviewer" → \`task\` with \`subagent_type: "sp-sub-plan-reviewer"\`
+- Default (no match) → \`task\` with \`subagent_type: "general"\`
+- **Fallback:** If the matched \`subagent_type\` is not configured in the current OpenCode environment, fall back to \`subagent_type: "general"\` to ensure the task still executes.
 
 Use OpenCode's native \`skill\` tool to list and load skills.`;
 
